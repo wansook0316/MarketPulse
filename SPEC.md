@@ -17,8 +17,10 @@
 8. [워크플로우](#워크플로우)
 9. [웹 구조](#웹-구조)
 10. [기술 스택](#기술-스택)
-11. [비용 추정](#비용-추정)
-12. [개발 로드맵](#개발-로드맵)
+11. [개발 환경](#개발-환경)
+12. [모바일 & PWA](#모바일--pwa)
+13. [비용 추정](#비용-추정)
+14. [개발 로드맵](#개발-로드맵)
 
 ---
 
@@ -1296,6 +1298,9 @@ https://marketpulse.com/
 - **Graph**: React Flow (지식 그래프)
 - **Markdown**: Remark + Rehype
 - **Forms**: React Hook Form + Zod
+- **PWA**: next-pwa (Progressive Web App)
+- **Mobile Gestures**: react-swipeable
+- **Virtual Scroll**: react-window (성능 최적화)
 
 ### Backend
 - **Framework**: Next.js API Routes
@@ -1323,6 +1328,7 @@ https://marketpulse.com/
 - **Container**: Docker Compose
 - **Reverse Proxy**: Nginx or Caddy (SSL)
 - **Domain**: Cloudflare (optional, DDNS)
+- **Dev Tunnel**: Cloudflare Tunnel or ngrok (모바일 테스트)
 
 ### Development
 - **Package Manager**: pnpm or npm
@@ -1330,6 +1336,512 @@ https://marketpulse.com/
 - **Type Checking**: TypeScript strict mode
 - **Testing**: Jest + React Testing Library (optional)
 - **Monorepo**: 단일 레포 (초기)
+
+---
+
+## 개발 환경
+
+### 로컬 개발 환경
+
+개발은 모바일에서 진행하므로, 웹에서 미리보기 및 테스트가 필수입니다.
+
+#### **개발 워크플로우**
+
+```
+로컬 머신 (MacBook/PC)
+  ↓
+Next.js 개발 서버 (localhost:3000)
+  ↓
+[옵션 1] Cloudflare Tunnel (추천)
+  or
+[옵션 2] ngrok
+  ↓
+Public URL (https://xxx.trycloudflare.com)
+  ↓
+모바일 기기에서 접속 & 테스트
+```
+
+### 옵션 1: Cloudflare Tunnel (무료, 추천)
+
+**특징:**
+- 완전 무료
+- 안정적인 터널링
+- 빠른 속도
+- SSL 자동 적용
+
+**설치 & 사용:**
+```bash
+# cloudflared 설치 (macOS)
+brew install cloudflare/cloudflare/cloudflared
+
+# Next.js 개발 서버 실행
+npm run dev
+
+# 다른 터미널에서 터널 생성
+cloudflared tunnel --url http://localhost:3000
+
+# 출력된 URL을 모바일에서 접속
+# 예: https://xxx-xxx-xxx.trycloudflare.com
+```
+
+**장점:**
+- 계정 생성 불필요
+- 무제한 사용
+- 빠른 응답 속도
+
+### 옵션 2: ngrok
+
+**설치 & 사용:**
+```bash
+# ngrok 설치
+brew install ngrok
+
+# 터널 생성
+ngrok http 3000
+
+# 출력된 URL 사용
+# 예: https://xxxx-xxxx.ngrok.io
+```
+
+**제한사항:**
+- 무료 플랜: 세션당 2시간
+- URL이 매번 바뀜
+
+### VS Code Remote Development (선택)
+
+모바일에서 직접 코딩하려면:
+
+```
+모바일 (iPad + Code Editor App)
+  ↓
+SSH/Remote 연결
+  ↓
+로컬 머신의 개발 환경
+  ↓
+실시간 Hot Reload
+```
+
+**도구:**
+- **Code-Server**: 브라우저에서 VS Code
+- **Tailscale**: 안전한 원격 접속
+
+### Docker 개발 환경
+
+시놀로지 배포 전 로컬 Docker로 테스트:
+
+```bash
+# docker-compose.yml을 로컬에서 실행
+docker-compose up
+
+# 모든 서비스가 로컬에서 동작
+# - Next.js (localhost:3000)
+# - PostgreSQL (localhost:5432)
+# - Qdrant (localhost:6333)
+```
+
+### 개발 체크리스트
+
+- [ ] Node.js 20+ 설치
+- [ ] Docker Desktop 설치
+- [ ] Cloudflared 또는 ngrok 설치
+- [ ] Git 설정
+- [ ] 환경 변수 파일 (.env.local) 생성
+- [ ] 모바일에서 터널 URL 접속 테스트
+
+---
+
+## 모바일 & PWA
+
+### 모바일 우선 반응형 디자인
+
+**설계 원칙:**
+- Mobile First: 모바일 레이아웃을 먼저 디자인
+- Touch Friendly: 버튼 최소 44x44px
+- Readable: 최소 폰트 크기 16px
+- Fast: 이미지 최적화, 코드 스플리팅
+
+### Tailwind CSS 반응형 유틸리티
+
+```tsx
+// 모바일 우선 예시
+<div className="
+  w-full           /* 기본 (모바일): 전체 너비 */
+  md:w-1/2         /* 태블릿: 50% */
+  lg:w-1/3         /* 데스크톱: 33% */
+  p-4              /* 기본 패딩 */
+  md:p-6           /* 태블릿: 더 큰 패딩 */
+  text-base        /* 기본 폰트 */
+  lg:text-lg       /* 데스크톱: 큰 폰트 */
+">
+  Content
+</div>
+```
+
+**브레이크포인트:**
+```javascript
+// tailwind.config.ts
+const config = {
+  theme: {
+    screens: {
+      'sm': '640px',   // 모바일 가로
+      'md': '768px',   // 태블릿
+      'lg': '1024px',  // 데스크톱
+      'xl': '1280px',  // 큰 데스크톱
+    }
+  }
+}
+```
+
+### 반응형 네비게이션
+
+**모바일:**
+- 하단 탭 바 (쉬운 접근)
+- 햄버거 메뉴 (어드민)
+
+**데스크톱:**
+- 사이드바 (어드민)
+- 상단 네비게이션 (퍼블릭)
+
+**예시:**
+```tsx
+// 모바일: 하단 탭
+<nav className="md:hidden fixed bottom-0 w-full">
+  <BottomTabs />
+</nav>
+
+// 데스크톱: 사이드바
+<aside className="hidden md:block w-64">
+  <Sidebar />
+</aside>
+```
+
+### Progressive Web App (PWA)
+
+#### **PWA 요구사항**
+
+1. **홈 화면에 추가 가능**
+2. **앱처럼 실행** (주소창 없음)
+3. **오프라인 지원** (선택, 캐싱)
+4. **빠른 로딩**
+5. **설치 프롬프트**
+
+#### **기술 구현**
+
+**1. next-pwa 설치**
+```bash
+npm install next-pwa
+```
+
+**2. next.config.ts 설정**
+```typescript
+// next.config.ts
+import withPWA from 'next-pwa';
+
+const config = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development', // 개발시 비활성화
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 4,
+          maxAgeSeconds: 365 * 24 * 60 * 60 // 1년
+        }
+      }
+    },
+    {
+      urlPattern: /^https:\/\/marketpulse\.com\/api\/.*/i,
+      handler: 'NetworkFirst', // API는 네트워크 우선
+      options: {
+        cacheName: 'api-cache',
+        networkTimeoutSeconds: 10
+      }
+    },
+    {
+      urlPattern: /\.(?:jpg|jpeg|png|gif|webp|svg)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: {
+          maxEntries: 60,
+          maxAgeSeconds: 30 * 24 * 60 * 60 // 30일
+        }
+      }
+    }
+  ]
+});
+
+export default config;
+```
+
+**3. Web App Manifest**
+```json
+// public/manifest.json
+{
+  "name": "MarketPulse",
+  "short_name": "MarketPulse",
+  "description": "AI-curated investment insights",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
+```
+
+**4. HTML Head 메타 태그**
+```tsx
+// app/layout.tsx
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  manifest: '/manifest.json',
+  themeColor: '#3B82F6',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'MarketPulse'
+  },
+  formatDetection: {
+    telephone: false
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false
+  }
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ko">
+      <head>
+        {/* iOS 아이콘 */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+
+        {/* iOS Splash Screens */}
+        <link rel="apple-touch-startup-image" href="/splash/iphone-x.png" media="(device-width: 375px) and (device-height: 812px)" />
+
+        {/* MS Tile */}
+        <meta name="msapplication-TileColor" content="#3B82F6" />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+**5. 설치 프롬프트 (선택)**
+```tsx
+// components/InstallPrompt.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export function InstallPrompt() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowPrompt(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      setShowPrompt(false);
+    }
+
+    setDeferredPrompt(null);
+  };
+
+  if (!showPrompt) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 right-4 bg-white rounded-lg shadow-lg p-4 md:max-w-md md:left-auto">
+      <h3 className="font-bold mb-2">📱 MarketPulse 설치</h3>
+      <p className="text-sm text-gray-600 mb-3">
+        홈 화면에 추가하여 앱처럼 사용하세요!
+      </p>
+      <div className="flex gap-2">
+        <button
+          onClick={handleInstall}
+          className="flex-1 bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          설치
+        </button>
+        <button
+          onClick={() => setShowPrompt(false)}
+          className="px-4 py-2 rounded border"
+        >
+          나중에
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+### 모바일 UX 최적화
+
+#### **터치 제스처**
+```tsx
+// Swipe to refresh (승인 목록 등)
+import { useSwipeable } from 'react-swipeable';
+
+const handlers = useSwipeable({
+  onSwipedDown: () => {
+    // Pull to refresh
+    refetch();
+  },
+  trackMouse: true
+});
+
+<div {...handlers}>
+  {/* Content */}
+</div>
+```
+
+#### **가상 스크롤 (긴 목록)**
+```tsx
+// react-window로 성능 최적화
+import { FixedSizeList } from 'react-window';
+
+<FixedSizeList
+  height={600}
+  itemCount={tweets.length}
+  itemSize={100}
+  width="100%"
+>
+  {({ index, style }) => (
+    <div style={style}>
+      <TweetCard tweet={tweets[index]} />
+    </div>
+  )}
+</FixedSizeList>
+```
+
+#### **로딩 스켈레톤**
+```tsx
+// 빠른 체감 속도
+export function SummarySkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+    </div>
+  );
+}
+```
+
+### PWA 테스트 체크리스트
+
+- [ ] manifest.json 유효성 검사 (Chrome DevTools)
+- [ ] Service Worker 등록 확인
+- [ ] 오프라인 동작 테스트
+- [ ] 홈 화면 추가 테스트 (iOS/Android)
+- [ ] 아이콘 표시 확인 (모든 크기)
+- [ ] Lighthouse PWA 점수 90+ 확인
+- [ ] 다양한 네트워크 속도 테스트
+
+### 모바일 브라우저 지원
+
+| 브라우저 | 버전 | PWA 지원 |
+|---------|------|---------|
+| Chrome (Android) | 최신 | ✅ 전체 |
+| Safari (iOS) | 15.4+ | ✅ 대부분 |
+| Samsung Internet | 최신 | ✅ 전체 |
+| Firefox (Android) | 최신 | ⚠️ 제한적 |
+
+**iOS 제약사항:**
+- Push 알림: iOS 16.4+ 필요
+- 설치 프롬프트: 없음 (수동 설치만 가능)
+- Storage: 50MB 제한
+
+### 성능 목표
+
+- **First Contentful Paint**: < 1.5s
+- **Time to Interactive**: < 3.5s
+- **Lighthouse Performance**: 90+
+- **Lighthouse PWA**: 90+
+- **Bundle Size**: < 200KB (초기)
 
 ---
 
@@ -1379,6 +1891,8 @@ https://marketpulse.com/
 - [ ] Next.js 앱 설정 (admin/public 분리)
 - [ ] 기본 인증 (JWT)
 - [ ] 도메인 + SSL 설정
+- [ ] Cloudflare Tunnel 설정 (모바일 개발용)
+- [ ] PWA 기본 설정 (next-pwa, manifest.json)
 
 ### Phase 2: 수집 & 저장 (1주)
 - [ ] Apify API 연동
@@ -1422,24 +1936,32 @@ https://marketpulse.com/
 - [ ] 톤별 성과 분석
 
 ### Phase 7: Public 웹사이트 (1주)
-- [ ] 홈페이지 (요약 목록)
-- [ ] 요약 상세 페이지
-- [ ] Wiki (용어집)
-- [ ] 그래프 시각화 (React Flow)
+- [ ] 홈페이지 (요약 목록) - 반응형
+- [ ] 요약 상세 페이지 - 반응형
+- [ ] Wiki (용어집) - 반응형
+- [ ] 그래프 시각화 (React Flow) - 터치 지원
+- [ ] 모바일 네비게이션 (하단 탭 바)
+- [ ] 터치 제스처 (Pull to refresh)
+- [ ] PWA 아이콘 생성 (모든 크기)
 - [ ] SEO 최적화
 - [ ] RSS 피드
 
 ### Phase 8: 어드민 고도화 (1주)
-- [ ] 대시보드 통계
+- [ ] 대시보드 통계 - 반응형
 - [ ] Mermaid 흐름도
-- [ ] 프롬프트 에디터
+- [ ] 프롬프트 에디터 (모바일 편집 지원)
 - [ ] 톤 A/B 테스트 UI
 - [ ] 타겟 계정 벤치마킹
 - [ ] 주간 보고서 자동 생성
+- [ ] 모바일 승인 워크플로우 최적화
 
 ### Phase 9: 테스트 & 최적화 (1주)
 - [ ] 전체 파이프라인 테스트
-- [ ] 성능 최적화
+- [ ] 성능 최적화 (번들 크기, Lighthouse)
+- [ ] 모바일 실기기 테스트 (iOS/Android)
+- [ ] PWA 기능 테스트 (홈 화면 추가, 오프라인)
+- [ ] 다양한 화면 크기 테스트
+- [ ] 터치 제스처 테스트
 - [ ] 에러 핸들링
 - [ ] 로깅 시스템
 - [ ] 백업 자동화
