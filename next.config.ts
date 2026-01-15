@@ -3,6 +3,7 @@ import withPWA from 'next-pwa';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'standalone', // Required for Docker
 
   // PWA will be disabled in development
   ...withPWA({

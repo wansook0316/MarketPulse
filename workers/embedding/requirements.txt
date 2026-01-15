@@ -1,0 +1,18 @@
+# BGE-M3 Embedding Model
+FlagEmbedding==1.2.10
+sentence-transformers==2.3.1
+
+# PyTorch (CPU version for cost optimization)
+torch==2.1.2
+transformers==4.37.2
+
+# Database
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# Vector Database
+qdrant-client==1.7.0
+
+# Utilities
+python-dotenv==1.0.1
+schedule==1.2.0
