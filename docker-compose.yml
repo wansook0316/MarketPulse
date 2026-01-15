@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: marketpulse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: marketpulse
+      POSTGRES_USER: ${POSTGRES_USER:-marketpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-marketpulse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marketpulse
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: marketpulse-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marketpulse
+
+  # BGE-M3 Embedding Worker (Python)
+  embedding-worker:
+    build:
+      context: ./workers/embedding
+      dockerfile: Dockerfile
+    container_name: marketpulse-embedding-worker
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: marketpulse
+      POSTGRES_USER: ${POSTGRES_USER:-marketpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      MODEL_NAME: BAAI/bge-m3
+      BATCH_SIZE: ${EMBEDDING_BATCH_SIZE:-32}
+    volumes:
+      - ./vault:/app/vault:ro
+      - model_cache:/root/.cache/huggingface
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - marketpulse
+
+  # Background Worker (Node.js)
+  worker:
+    build:
+      context: ./workers/background
+      dockerfile: Dockerfile
+    container_name: marketpulse-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-marketpulse}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/marketpulse
+      QDRANT_URL: http://qdrant:6333
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      APIFY_API_KEY: ${APIFY_API_KEY}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      TWITTER_API_KEY: ${TWITTER_API_KEY}
+      TWITTER_API_SECRET: ${TWITTER_API_SECRET}
+      TWITTER_ACCESS_TOKEN: ${TWITTER_ACCESS_TOKEN}
+      TWITTER_ACCESS_SECRET: ${TWITTER_ACCESS_SECRET}
+    volumes:
+      - ./vault:/app/vault
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - marketpulse
+
+  # Next.js Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-production}
+    container_name: marketpulse-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-marketpulse}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/marketpulse
+      QDRANT_URL: http://qdrant:6333
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - ./vault:/app/vault:ro
+      - ./public:/app/public
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - marketpulse
+
+volumes:
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  model_cache:
+    driver: local
+
+networks:
+  marketpulse:
+    driver: bridge
