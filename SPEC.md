@@ -1885,21 +1885,56 @@ export function SummarySkeleton() {
 
 ## 개발 로드맵
 
-### Phase 1: 기본 인프라 (1주)
-- [ ] Synology Docker 환경 구축
-- [ ] PostgreSQL + Qdrant 컨테이너
-- [ ] Next.js 앱 설정 (admin/public 분리)
-- [ ] 기본 인증 (JWT)
-- [ ] 도메인 + SSL 설정
-- [ ] Cloudflare Tunnel 설정 (모바일 개발용)
-- [ ] PWA 기본 설정 (next-pwa, manifest.json)
+> **현재 진행률**: 약 15~20% 완료 (Phase 1 대부분 완료, Phase 2 일부 완료)
+> **최종 업데이트**: 2026-01-15
 
-### Phase 2: 수집 & 저장 (1주)
+### 현재 상태 요약
+
+**✅ 완료:**
+- Docker 인프라 (PostgreSQL, Qdrant, 워커)
+- Next.js 기본 설정 + PWA
+- JWT 인증 시스템
+- 관리자 대시보드 기본 UI
+- Bucket/Account 관리 (CRUD)
+- CI/CD 파이프라인 (GitHub Actions)
+- 배포 자동화 (Synology)
+
+**🚧 진행 중:**
+- 트윗 수집 워커 구현 필요
+- AI 파이프라인 구축 필요
+
+**📋 다음 우선순위:**
+1. Phase 2 완성 (트윗 수집)
+2. Phase 4 시작 (AI 파이프라인)
+
+---
+
+### Phase 1: 기본 인프라 (1주) - ✅ 90% 완료
+
+- [x] Docker Compose 구성 (postgres, qdrant, workers, web)
+- [x] PostgreSQL + Qdrant 컨테이너
+- [x] Next.js 앱 설정 (admin/public 분리, App Router)
+- [x] 기본 인증 (JWT + bcrypt)
+- [x] PWA 기본 설정 (next-pwa, manifest.json)
+- [x] 환경 변수 템플릿 (.env.example)
+- [x] 데이터베이스 스키마 (init.sql)
+- [x] CI/CD 파이프라인 (GitHub Actions)
+- [ ] Synology 실제 배포 (로컬 설정 완료)
+- [ ] 도메인 + SSL 설정 (실 배포 시)
+- [ ] Cloudflare Tunnel 설정 (문서화만 완료)
+
+### Phase 2: 수집 & 저장 (1주) - 🔄 40% 완료
+
+- [x] 계정 CRUD (API + UI)
+- [x] 버킷 CRUD (API + UI)
+- [x] 검색 기능 (계정명, 핸들)
+- [x] PostgreSQL 연동
+- [x] 데이터 모델링
 - [ ] Apify API 연동
-- [ ] 계정/버킷 CRUD
 - [ ] 글로벌 수집 큐 구현
 - [ ] 마크다운 파일 생성 (vault/)
 - [ ] 스레드 처리 로직
+- [ ] 실제 트윗 수집 워커
 
 ### Phase 3: 용어집 시스템 (1주)
 - [ ] Glossary Agent 구현
@@ -1946,8 +1981,15 @@ export function SummarySkeleton() {
 - [ ] SEO 최적화
 - [ ] RSS 피드
 
-### Phase 8: 어드민 고도화 (1주)
-- [ ] 대시보드 통계 - 반응형
+### Phase 8: 어드민 고도화 (1주) - 🔄 30% 완료
+
+- [x] 로그인 페이지
+- [x] 대시보드 레이아웃 (Sidebar, Header)
+- [x] 대시보드 홈 (기본 통계 카드)
+- [x] Bucket 관리 페이지 (CRUD)
+- [x] Account 관리 페이지 (CRUD)
+- [x] 모달, 테이블, Alert 등 UI 컴포넌트
+- [x] 반응형 디자인
 - [ ] Mermaid 흐름도
 - [ ] 프롬프트 에디터 (모바일 편집 지원)
 - [ ] 톤 A/B 테스트 UI
@@ -1976,24 +2018,76 @@ export function SummarySkeleton() {
 
 ---
 
-## 다음 단계
+## 구현 내역
 
-1. **기술 스택 최종 확정**
-   - PostgreSQL vs MongoDB?
-   - NextAuth vs 직접 구현?
+### 2026-01-15: Phase 1 & 기본 관리 UI 완료
 
-2. **프로젝트 구조 설계**
-   - 디렉토리 구조
-   - 컴포넌트 구조
+**인프라:**
+- ✅ Docker Compose 구성 (PostgreSQL 16, Qdrant, Workers)
+- ✅ Next.js 15 + TypeScript + Tailwind CSS
+- ✅ PWA 설정 (next-pwa, manifest.json)
+- ✅ 데이터베이스 스키마 (11개 테이블, 인덱스, 트리거)
 
-3. **DB 스키마 리뷰 및 마이그레이션 생성**
+**인증:**
+- ✅ JWT 기반 인증 시스템
+- ✅ bcrypt 비밀번호 해싱
+- ✅ 로그인 페이지
 
-4. **프롬프트 템플릿 초안 작성**
-   - 5개 에이전트 프롬프트
+**API:**
+- ✅ Bucket CRUD API (`/api/admin/buckets`)
+- ✅ Account CRUD API (`/api/admin/accounts`)
+- ✅ 페이지네이션, 검색, 필터링 지원
 
-5. **Docker Compose 구성 작성**
+**관리자 UI:**
+- ✅ 대시보드 레이아웃 (Sidebar, Header)
+- ✅ Bucket 관리 페이지 (생성, 수정, 삭제)
+- ✅ Account 관리 페이지 (생성, 수정, 삭제, 검색)
+- ✅ UI 컴포넌트 (Button, Input, Card, Badge, Modal, Table, Alert)
+- ✅ 반응형 디자인
 
-6. **개발 시작!** 🚀
+**데이터베이스:**
+- ✅ PostgreSQL 클라이언트 (트랜잭션 지원)
+- ✅ Qdrant 클라이언트 (벡터 검색)
+- ✅ TypeScript 타입 정의
+
+**DevOps:**
+- ✅ CI/CD 파이프라인 (GitHub Actions)
+- ✅ Synology NAS 자동 배포
+- ✅ 배포 스크립트 (deploy.sh)
+- ✅ 배포 문서 (DEPLOY.md)
+
+**문서:**
+- ✅ README 작성
+- ✅ 배포 가이드 작성
+- ✅ 환경 변수 템플릿
+
+**Git 커밋:**
+```
+4404576 feat: Add CI/CD pipeline for Synology NAS deployment
+bbe07b3 feat: Add comprehensive Account management UI
+0908e3b feat: Add comprehensive Bucket management UI
+74fe7c3 feat: Add admin UI with login and dashboard layout
+843f3fa feat: Add complete REST API implementation
+83446d8 feat: Add database libraries and base UI components
+2b1604e feat: Complete Docker infrastructure and database setup
+ae59072 feat: Add Phase 1 infrastructure configuration
+```
+
+### 다음 작업 우선순위
+
+1. **Phase 2 완성** - 트윗 수집 워커
+   - Apify API 연동
+   - 글로벌 수집 큐 구현
+   - 마크다운 저장 (vault/)
+
+2. **Phase 4 시작** - AI 파이프라인
+   - OpenRouter 연동
+   - 5개 에이전트 구현
+   - RAG 시스템 구축
+
+3. **Phase 3** - 용어집 시스템
+   - Glossary Agent
+   - 자동 생성 및 확장
 
 ---
 
