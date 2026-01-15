@@ -27,25 +27,25 @@ if [ ! -f .env ]; then
 fi
 
 echo "🛑 Stopping existing containers..."
-docker-compose down
+sudo docker-compose down
 
 echo "🧹 Cleaning up old images..."
-docker image prune -f
+sudo docker image prune -f
 
 echo "🏗️  Building and starting containers..."
-docker-compose up -d --build
+sudo docker-compose up -d --build
 
 echo "⏳ Waiting for services to be ready..."
 sleep 10
 
 echo "✅ Checking container status..."
-docker-compose ps
+sudo docker-compose ps
 
 echo ""
 echo "🎉 Deployment completed successfully!"
 echo ""
 echo "📊 Container status:"
-docker-compose ps
+sudo docker-compose ps
 
 echo ""
 echo "📝 View logs with: docker-compose logs -f"
