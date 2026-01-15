@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           port: ${{ secrets.SYNOLOGY_SSH_PORT }}
           script: |
-            cd /volume1/docker/marketpulse
+            cd /volume1/Services/marketpulse
 
             # Pull latest code
             git pull origin main

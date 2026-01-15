@@ -54,9 +54,9 @@ SSH로 Synology에 접속:
 ssh your-username@your-synology-ip
 
 # Synology에서 실행
-sudo mkdir -p /volume1/docker/marketpulse
-sudo chown your-username:users /volume1/docker/marketpulse
-cd /volume1/docker/marketpulse
+sudo mkdir -p /volume1/Services/marketpulse
+sudo chown your-username:users /volume1/Services/marketpulse
+cd /volume1/Services/marketpulse
 ```
 
 ### 4. Git 저장소 클론
@@ -163,7 +163,7 @@ GitHub Actions를 사용하기 전에 수동으로 한 번 배포해보세요:
 ssh your-username@your-synology-ip
 
 # 프로젝트 디렉토리로 이동
-cd /volume1/docker/marketpulse
+cd /volume1/Services/marketpulse
 
 # 배포 스크립트 실행 권한 부여
 chmod +x deploy.sh
@@ -296,7 +296,7 @@ docker-compose up -d
 **해결:**
 1. Git 저장소 상태 확인:
    ```bash
-   cd /volume1/docker/marketpulse
+   cd /volume1/Services/marketpulse
    git status
    ```
 
@@ -367,7 +367,7 @@ docker-compose up -d
 
 ```bash
 # 백업 스크립트 생성
-cat > /volume1/docker/marketpulse/backup.sh << 'EOF'
+cat > /volume1/Services/marketpulse/backup.sh << 'EOF'
 #!/bin/bash
 BACKUP_DIR="/volume1/backups/marketpulse"
 DATE=$(date +%Y%m%d_%H%M%S)
@@ -390,7 +390,7 @@ chmod +x backup.sh
 
 # 크론탭 설정 (매일 새벽 2시)
 crontab -e
-# 추가: 0 2 * * * /volume1/docker/marketpulse/backup.sh
+# 추가: 0 2 * * * /volume1/Services/marketpulse/backup.sh
 ```
 
 ### SSL/HTTPS 설정

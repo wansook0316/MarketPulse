@@ -8,7 +8,7 @@ set -e  # Exit on error
 echo "🚀 Starting MarketPulse deployment..."
 
 # Configuration
-PROJECT_DIR="/volume1/docker/marketpulse"
+PROJECT_DIR="/volume1/Services/marketpulse"
 BRANCH="${1:-main}"
 
 # Navigate to project directory
