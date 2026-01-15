@@ -80,6 +80,7 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    network_mode: "host"
 
   # Background Worker (Node.js)
   worker:
@@ -111,6 +112,7 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    network_mode: "host"
 
   # Next.js Web Application
   web:
@@ -143,6 +145,7 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    network_mode: "host"
 
 volumes:
   postgres_data:
