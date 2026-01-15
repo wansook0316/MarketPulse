@@ -12,3 +12,23 @@ export type { BadgeProps } from './Badge';
 
 export { default as Spinner } from './Spinner';
 export type { SpinnerProps } from './Spinner';
+
+export { default as Modal, ModalFooter } from './Modal';
+export type { ModalProps, ModalFooterProps } from './Modal';
+
+export {
+  default as Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableRow,
+  TableHead,
+  TableCell,
+} from './Table';
+export type { TableProps } from './Table';
+
+export { default as Alert } from './Alert';
+export type { AlertProps } from './Alert';
+
+export { default as Textarea } from './Textarea';
+export type { TextareaProps } from './Textarea';
