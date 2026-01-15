@@ -1,0 +1,42 @@
+name: Deploy to Synology
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Synology NAS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SYNOLOGY_HOST }}
+          username: ${{ secrets.SYNOLOGY_USER }}
+          key: ${{ secrets.SYNOLOGY_SSH_KEY }}
+          port: ${{ secrets.SYNOLOGY_SSH_PORT }}
+          script: |
+            cd /volume1/docker/marketpulse
+
+            # Pull latest code
+            git pull origin main
+
+            # Stop existing containers
+            docker-compose down
+
+            # Pull latest images
+            docker-compose pull
+
+            # Build and start containers
+            docker-compose up -d --build
+
+            # Clean up old images
+            docker image prune -f
+
+            echo "Deployment completed successfully!"
