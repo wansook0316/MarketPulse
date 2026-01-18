@@ -85,15 +85,15 @@ jobs:
             git pull origin main
 
             # Stop existing containers
-            sudo docker-compose down
+            docker-compose down
 
             # Pull latest images
-            sudo docker-compose pull
+            docker-compose pull
 
             # Start containers
-            sudo docker-compose up -d
+            docker-compose up -d
 
             # Clean up old images
-            sudo docker image prune -f
+            docker image prune -f
 
             echo "Deployment completed successfully!"
