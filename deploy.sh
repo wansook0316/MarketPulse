@@ -29,11 +29,14 @@ fi
 echo "🛑 Stopping existing containers..."
 sudo docker-compose down
 
+echo "📥 Pulling latest images..."
+sudo docker-compose pull
+
+echo "🚀 Starting containers..."
+sudo docker-compose up -d
+
 echo "🧹 Cleaning up old images..."
 sudo docker image prune -f
-
-echo "🏗️  Building and starting containers..."
-sudo docker-compose up -d --build
 
 echo "⏳ Waiting for services to be ready..."
 sleep 10

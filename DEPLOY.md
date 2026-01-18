@@ -124,7 +124,16 @@ cat ~/.ssh/github_actions
 2. **Settings** > **Secrets and variables** > **Actions**
 3. **New repository secret** 클릭
 
-### 2. Secrets 추가
+### 2. GitHub Container Registry 권한 설정
+
+**중요:** GitHub Actions가 Docker 이미지를 빌드하고 GHCR에 push하려면 패키지 권한이 필요합니다.
+
+1. GitHub 레포지토리 → **Settings** → **Actions** → **General**
+2. **Workflow permissions** 섹션에서
+3. **Read and write permissions** 선택
+4. **Save** 클릭
+
+### 3. Secrets 추가
 
 다음 4개의 Secrets을 추가하세요:
 
@@ -158,8 +167,17 @@ cat ~/.ssh/github_actions
 
 GitHub Actions를 사용하기 전에 수동으로 한 번 배포해보세요:
 
+**참고:** 첫 배포 시에는 GitHub에서 Docker 이미지를 빌드해야 합니다.
+로컬에서 코드를 push하면 GitHub Actions가 자동으로 이미지를 빌드합니다.
+
 ```bash
-# Synology SSH 접속
+# 먼저 로컬에서 GitHub에 push (이미지 빌드 트리거)
+git push origin main
+
+# GitHub Actions에서 이미지 빌드 완료 확인 (약 5-10분 소요)
+# GitHub 레포지토리 → Actions 탭에서 확인
+
+# 이미지 빌드 완료 후 Synology SSH 접속
 ssh your-username@your-synology-ip
 
 # 프로젝트 디렉토리로 이동
@@ -168,7 +186,7 @@ cd /volume1/Services/marketpulse
 # 배포 스크립트 실행 권한 부여
 chmod +x deploy.sh
 
-# 수동 배포
+# 수동 배포 (이미지 pull & 실행)
 ./deploy.sh
 ```
 
@@ -208,13 +226,19 @@ git push origin main
 
 1. GitHub 레포지토리의 **Actions** 탭 열기
 2. 최신 workflow 실행 확인
-3. 각 단계별 로그 확인
+3. 두 가지 Job 확인:
+   - **build-and-push**: Docker 이미지 빌드 및 GHCR에 push (5-10분)
+   - **deploy**: Synology에 배포 (1-2분)
 
 ### 3. 배포 완료 확인
 
-- ✅ GitHub Actions가 성공적으로 완료되면
-- ✅ Synology에서 자동으로 컨테이너가 재시작됨
+- ✅ **build-and-push** Job이 성공하면 GHCR에 이미지가 업로드됨
+- ✅ **deploy** Job이 성공하면 Synology에서 자동으로 최신 이미지를 pull하고 재시작
 - ✅ 변경사항이 반영된 것 확인
+
+### 4. GHCR 이미지 확인 (선택)
+
+GitHub 레포지토리 메인 페이지 → 오른쪽 **Packages** 섹션에서 빌드된 이미지 확인 가능
 
 ---
 

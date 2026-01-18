@@ -52,9 +52,7 @@ services:
 
   # BGE-M3 Embedding Worker (Python)
   embedding-worker:
-    build:
-      context: ./workers/embedding
-      dockerfile: Dockerfile
+    image: ghcr.io/wansook0316/marketpulse-embedding-worker:latest
     container_name: marketpulse-embedding-worker
     restart: unless-stopped
     environment:
@@ -77,16 +75,10 @@ services:
         condition: service_healthy
     networks:
       - marketpulse
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    network_mode: "host"
 
   # Background Worker (Node.js)
   worker:
-    build:
-      context: ./workers/background
-      dockerfile: Dockerfile
+    image: ghcr.io/wansook0316/marketpulse-worker:latest
     container_name: marketpulse-worker
     restart: unless-stopped
     environment:
@@ -109,17 +101,10 @@ services:
         condition: service_healthy
     networks:
       - marketpulse
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    network_mode: "host"
 
   # Next.js Web Application
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: ${BUILD_TARGET:-production}
+    image: ghcr.io/wansook0316/marketpulse-web:latest
     container_name: marketpulse-web
     restart: unless-stopped
     environment:
@@ -142,10 +127,6 @@ services:
         condition: service_healthy
     networks:
       - marketpulse
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    network_mode: "host"
 
 volumes:
   postgres_data:
