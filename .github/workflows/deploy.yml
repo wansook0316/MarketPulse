@@ -79,21 +79,22 @@ jobs:
           key: ${{ secrets.SYNOLOGY_SSH_KEY }}
           port: ${{ secrets.SYNOLOGY_SSH_PORT }}
           script: |
+            export PATH=/usr/local/bin:/usr/bin:/bin:$PATH
             cd /volume1/Services/marketpulse
 
             # Pull latest code (for docker-compose.yml and .env)
             git pull origin main
 
             # Stop existing containers
-            docker-compose down
+            /usr/local/bin/docker-compose down
 
             # Pull latest images
-            docker-compose pull
+            /usr/local/bin/docker-compose pull
 
             # Start containers
-            docker-compose up -d
+            /usr/local/bin/docker-compose up -d
 
             # Clean up old images
-            docker image prune -f
+            /usr/local/bin/docker image prune -f
 
             echo "Deployment completed successfully!"
